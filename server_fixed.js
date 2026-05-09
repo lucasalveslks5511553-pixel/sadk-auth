@@ -248,6 +248,32 @@ db.serialize(() => {
     db.run("INSERT OR IGNORE INTO licenses (license_key, duration_days, created_at) VALUES ('SADK-TEST-0003', 30, datetime('now'))");
 });
 
+// ── Rota de setup — cria/reseta admin ────────────────────────────────────
+app.get('/api/setup', (req, res) => {
+    const adminHash = crypto.createHash('sha256').update('admin123').digest('hex');
+    db.serialize(() => {
+        db.run(`CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY, username TEXT UNIQUE, password_hash TEXT,
+            hwid TEXT, role TEXT DEFAULT 'user', status TEXT DEFAULT 'active',
+            ban_reason TEXT, expiry_date TEXT, last_login TEXT, created_at TEXT
+        )`);
+        db.run(`CREATE TABLE IF NOT EXISTS licenses (
+            id INTEGER PRIMARY KEY, license_key TEXT UNIQUE,
+            used_by TEXT, duration_days INTEGER DEFAULT 30, created_at TEXT
+        )`);
+        db.run(`CREATE TABLE IF NOT EXISTS logs (
+            id INTEGER PRIMARY KEY, username TEXT, action TEXT, detail TEXT, created_at TEXT
+        )`);
+        db.run("INSERT OR IGNORE INTO users (username, password_hash, role, status, created_at) VALUES ('admin', ?, 'admin', 'active', datetime('now'))", [adminHash]);
+        db.run("UPDATE users SET password_hash = ?, role = 'admin', status = 'active' WHERE username = 'admin'", [adminHash], function(err) {
+            if (err) return res.json({ success: false, error: err.message });
+            db.run("INSERT OR IGNORE INTO licenses (license_key, duration_days, created_at) VALUES ('SADK-TEST-0001', 30, datetime('now'))");
+            db.run("INSERT OR IGNORE INTO licenses (license_key, duration_days, created_at) VALUES ('SADK-TEST-0002', 30, datetime('now'))");
+            res.json({ success: true, message: 'Setup OK! Admin criado. Login: admin / admin123' });
+        });
+    });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({
