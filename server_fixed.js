@@ -236,6 +236,11 @@ db.serialize(() => {
     // Corrigir senha do admin se ainda estiver em texto puro
     db.run("UPDATE users SET password_hash = ?, status = 'active' WHERE username = 'admin' AND password_hash = 'admin123'",
            [adminHash]);
+    // Forçar hash correto sempre que o servidor iniciar
+    db.run("UPDATE users SET password_hash = ?, role = 'admin', status = 'active' WHERE username = 'admin'",
+           [adminHash], function() {
+               console.log('Admin password synced, rows affected:', this.changes);
+           });
 
     // License de teste — use SADK-TEST-0001 para registrar
     db.run("INSERT OR IGNORE INTO licenses (license_key, duration_days, created_at) VALUES ('SADK-TEST-0001', 30, datetime('now'))");
