@@ -20,7 +20,13 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'admin_panel')));
+
+// Servir admin_panel como estático em /admin_panel/
+app.use('/admin_panel', express.static(path.join(__dirname, 'admin_panel')));
+// Rota raiz redireciona para o painel
+app.get('/', (req, res) => {
+    res.redirect('/admin_panel/minimal_admin.html');
+});
 
 // Database
 const db = new sqlite3.Database(DB_PATH);
