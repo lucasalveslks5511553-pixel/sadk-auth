@@ -1,0 +1,17 @@
+{
+  "name": "sadk-auth-server",
+  "version": "1.0.0",
+  "description": "SADK Authentication Server",
+  "main": "server_fixed.js",
+  "scripts": {
+    "start": "node server_fixed.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
